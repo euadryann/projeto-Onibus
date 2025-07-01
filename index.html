@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OnibusCuiaba - Passagens de Ônibus</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      background-color: #f0f2f5;
+      background-image: url('Cuiaba.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-attachment: fixed;
+      background-size: cover;
+    }
+
+    .navbar {
+      background-color: rgba(52, 152, 219, 0.8);
+      padding: 15px 30px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar h2 {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .navbar .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .navbar button {
+      background: white;
+      color: #3498db;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .navbar button:hover {
+      background-color: #d6eaf8;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.85);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      margin: 40px auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #3498db;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    select,
+    input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button.buscar {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #3498db;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button.buscar:hover {
+      background-color: #1b4f72;
+    }
+
+    .result {
+      margin-top: 20px;
+      text-align: center;
+      color: #3498db;
+      font-weight: bold;
+    }
+
+    /* centraliza a tabela e o conteúdo das células */
+    .result table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px auto;
+    }
+
+    .result th,
+    .result td {
+      text-align: center;
+      padding: 8px 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h2>OnibusCuiabá</h2>
+    <div class="nav-buttons">
+      <button onclick="window.location.href='login.html'">Entrar</button>
+      <button onclick="window.location.href='registrar.html'">Registrar</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Encontre sua Passagem</h1>
+    <label for="origem">Origem:</label>
+    <select id="origem">
+      <option value="">Selecione a cidade</option>
+      <option value="Cuiabá">Cuiabá</option>
+      <option value="Rondonópolis">Rondonópolis</option>
+      <option value="Várzea Grande">Várzea Grande</option>
+    </select>
+
+    <label for="destino">Destino:</label>
+    <select id="destino">
+      <option value="">Selecione a cidade</option>
+      <option value="Sinop">Sinop</option>
+      <option value="Primavera do Leste">Primavera do Leste</option>
+      <option value="Barra do Garças">Barra do Garças</option>
+    </select>
+
+    <label for="data">Data da Viagem:</label>
+    <input type="date" id="data" />
+
+    <button class="buscar" onclick="buscar()">Buscar Passagens</button>
+
+    <div class="result" id="resultado"></div>
+  </div>
+
+  <script>
+    function buscar() {
+      const origem = document.getElementById('origem').value;
+      const destino = document.getElementById('destino').value;
+      const data = document.getElementById('data').value;
+      const resultado = document.getElementById('resultado');
+
+      if (!origem || !destino || !data) {
+        alert('Por favor, preencha todos os campos.');
+        return;
+      }
+
+      const dataFormatada = new Date(data).toLocaleDateString();
+      const viagens = [
+        { partida: "06:30", chegada: "13:00", preco: "120,00" },
+        { partida: "08:00", chegada: "14:30", preco: "115,00" },
+        { partida: "14:00", chegada: "21:00", preco: "110,00" }
+      ];
+
+      let html = `<p><strong>Buscando passagens de ${origem} para ${destino} em ${dataFormatada}</strong></p>`;
+      html += `
+        <table>
+          <thead>
+            <tr>
+              <th>Horário de Partida</th>
+              <th>Chegada</th>
+              <th>Preço</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      viagens.forEach(v => {
+        html += `
+          <tr>
+            <td>${v.partida}</td>
+            <td>${v.chegada}</td>
+            <td>R$ ${v.preco}</td>
+          </tr>
+        `;
+      });
+      html += `</tbody></table>`;
+      resultado.innerHTML = html;
+    }
+  </script>
+  
+
+</body>
+</html>
