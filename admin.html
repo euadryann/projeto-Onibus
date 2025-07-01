@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - OnibusCuiaba</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+    body {
+      background-image:url('Cuiaba.jpg');
+      background-repeat:no-repeat;
+      background-position:center center;
+      background-attachment:fixed;
+      background-size:cover;
+    }
+    .navbar {
+      background-color:rgba(52,152,219,0.8);
+      padding:15px 30px;
+      color:white;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    }
+    .navbar h2 { font-size:24px; font-weight:bold; }
+    .nav-buttons { display:flex; gap:10px; }
+    .nav-buttons button {
+      background:white; color:#3498db; border:none;
+      padding:10px 20px; border-radius:20px;
+      font-weight:bold; cursor:pointer; transition:0.3s;
+    }
+    .nav-buttons button:hover { background:#d6eaf8; }
+    .admin-box {
+      background:rgba(255,255,255,0.9);
+      padding:30px; border-radius:10px;
+      box-shadow:0 0 15px rgba(0,0,0,0.1);
+      width:80%; max-width:800px; margin:40px auto;
+    }
+    .admin-box h2 { text-align:center; color:#3498db; margin-bottom:20px; }
+    .admin-actions {
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
+      gap:20px;
+    }
+    .admin-card {
+      background:white;
+      padding:20px;
+      border-radius:8px;
+      box-shadow:0 1px 5px rgba(0,0,0,0.1);
+      text-align:center;
+      cursor:pointer;
+      transition:0.2s;
+    }
+    .admin-card:hover {
+      transform:translateY(-5px);
+      box-shadow:0 4px 10px rgba(0,0,0,0.15);
+    }
+    .admin-card i {
+      font-size:36px;
+      margin-bottom:10px;
+      display:block;
+      color:#3498db;
+    }
+    .logout-btn {
+      margin-top:20px;
+      display:block;
+      width:120px;
+      padding:10px;
+      background:#e74c3c;
+      color:white;
+      text-align:center;
+      border:none;
+      border-radius:6px;
+      font-weight:bold;
+      cursor:pointer;
+      transition:0.2s;
+    }
+    .logout-btn:hover { background:#c0392b; }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h2>OnibusCuiabá - Painel Admin</h2>
+    <div class="nav-buttons">
+      <button onclick="logout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="admin-box">
+    <h2>Bem-vindo, Admin!</h2>
+    <div class="admin-actions">
+      <div class="admin-card" onclick="location.href='adminusuarios.html'">
+        <i>👥</i>
+        Gerenciar Usuários
+      </div>
+      <div class="admin-card" onclick="location.href='onibus.html'">
+        <i>📊</i>
+        Onibus
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Protege rota: se não for admin, redireciona
+    const logado = JSON.parse(localStorage.getItem('loggedUser'));
+    if (!logado || logado.role !== 'admin') {
+      alert('Acesso negado! Você precisa ser administrador.');
+      location.href = 'login.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('loggedUser');
+      location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>
+
