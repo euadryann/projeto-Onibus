@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Gerenciar Usuários - OnibusCuiaba</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
+    body {
+      background-image:url('Cuiaba.jpg');
+      background-repeat:no-repeat;
+      background-position:center center;
+      background-attachment:fixed;
+      background-size:cover;
+    }
+    .navbar {
+      background-color:rgba(52,152,219,0.8);
+      padding:15px 30px;
+      color:white;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    }
+    .navbar h2 { font-size:24px; font-weight:bold; }
+    .nav-buttons { display:flex; gap:10px; }
+    .nav-buttons button {
+      background:white; color:#3498db; border:none;
+      padding:10px 20px; border-radius:20px;
+      font-weight:bold; cursor:pointer; transition:0.3s;
+    }
+    .nav-buttons button:hover { background:#d6eaf8; }
+
+    /* Estilos gerais do container e títulos */
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      max-width: 900px; /* Aumentei a largura para acomodar mais conteúdo */
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+    h1 {
+      text-align: center;
+      color: #3498db;
+      margin-bottom: 20px;
+    }
+
+    /* Estilos para cada bloco de usuário */
+    .user-entry {
+      background: #f0f2f5; /* Fundo mais claro para o bloco do usuário */
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px; /* Espaço entre os usuários */
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .user-header {
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    .user-header h3 {
+      color: #3498db;
+      font-size: 20px;
+      margin: 0;
+    }
+    .user-reservations {
+      padding-left: 10px; /* Recuo para as reservas do usuário */
+    }
+
+    /* Estilos de viagem (copiados de Historicodeviagem.html) */
+    .viagem-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 15px; /* Espaço menor entre as viagens */
+      border-left: 4px solid #3498db;
+      transition: all 0.3s;
+    }
+    .viagem-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .viagem-card h3 {
+      color: #3498db;
+      margin-bottom: 10px;
+      font-size: 18px; /* Um pouco menor para as viagens dentro do usuário */
+    }
+    .viagem-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .viagem-info p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    .acoes {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .btn-voltar {
+      background: #95a5a6;
+      color: white;
+    }
+    .btn-cancelar {
+      background: #e74c3c;
+      color: white;
+    }
+    .btn-detalhes {
+      background: #3498db;
+      color: white;
+    }
+    .sem-viagens {
+      text-align: center;
+      padding: 20px;
+      color: #7f8c8d;
+    }
+    .status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .status-confirmada {
+      background: #2ecc71;
+      color: white;
+    }
+    .status-cancelada {
+      background: #e74c3c;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h2>OnibusCuiabá - Gerenciar Usuários</h2>
+    <div class="nav-buttons">
+      <button onclick="location.href='admin.html'">Voltar ao Painel</button>
+      <button onclick="logout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Lista de Usuários e Viagens</h1>
+    <div id="users-list">
+      <!-- Conteúdo dos usuários e suas viagens será carregado aqui pelo JavaScript -->
+    </div>
+  </div>
+
+  <script>
+    // Protege rota: se não for admin, redireciona
+    const loggedUser = JSON.parse(localStorage.getItem('loggedUser'));
+    if (!loggedUser || loggedUser.role !== 'admin') {
+      alert('Acesso negado! Você precisa ser administrador para acessar esta página.');
+      location.href = 'login.html';
+    }
+
+    // Função de logout
+    function logout() {
+      localStorage.removeItem('loggedUser');
+      location.href = 'login.html';
+    }
+
+    // Função para carregar e renderizar todos os usuários
+    function renderUsers() {
+      const usersContainer = document.getElementById('users-list');
+      usersContainer.innerHTML = ''; // Limpa o conteúdo existente
+
+      let allUsers = [];
+      try {
+        const usersString = localStorage.getItem('usuarios');
+        if (usersString) {
+          const parsedUsers = JSON.parse(usersString);
+          if (Array.isArray(parsedUsers)) {
+            allUsers = parsedUsers;
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao carregar usuários do localStorage:", e);
+        alert("Erro ao carregar dados dos usuários.");
+        return; // Sai da função se houver erro
+      }
+
+      if (allUsers.length === 0) {
+        usersContainer.innerHTML = '<p class="sem-viagens">Nenhum usuário cadastrado ainda.</p>';
+      } else {
+        allUsers.forEach(user => {
+          // Opcional: Você pode querer excluir o próprio admin da lista se ele for o único.
+          // if (user.role === 'admin' && user.email === loggedUser.email) return;
+
+          const userDiv = document.createElement('div');
+          userDiv.className = 'user-entry';
+
+          let userReservasHtml = '';
+          if (user.reservas && user.reservas.length > 0) {
+            userReservasHtml = user.reservas.map(viagem => `
+              <div class="viagem-card" id="viagem-${user.email}-${viagem.id}">
+                <h3>Viagem para ${viagem.destino} <span class="status status-${viagem.status || 'confirmada'}">${viagem.status ? viagem.status.toUpperCase() : 'CONFIRMADA'}</span></h3>
+                <div class="viagem-info">
+                  <div>
+                    <p><strong>Origem:</strong> ${viagem.origem}</p>
+                    <p><strong>Destino:</strong> ${viagem.destino}</p>
+                    <p><strong>Data:</strong> ${viagem.data}</p>
+                  </div>
+                  <div>
+                    <p><strong>Horário:</strong> ${viagem.horario}</p>
+                    <p><strong>Assentos:</strong> ${viagem.assentos ? viagem.assentos.join(', ') : 'N/A'}</p>
+                    <p><strong>Total:</strong> R$ ${viagem.total ? viagem.total.toFixed(2) : '0.00'}</p>
+                  </div>
+                </div>
+                <div class="acoes">
+                  <button onclick="detalhesViagemAdmin('${user.email}', '${viagem.id}')" class="btn-detalhes">Detalhes</button>
+                  ${viagem.status !== 'cancelada' ? `<button onclick="cancelarViagemAdmin('${user.email}', '${viagem.id}')" class="btn-cancelar">Cancelar</button>` : ''}
+                </div>
+              </div>
+            `).join('');
+          } else {
+            userReservasHtml = '<p class="sem-viagens">Este usuário não possui viagens agendadas.</p>';
+          }
+
+          userDiv.innerHTML = `
+            <div class="user-header">
+              <h3>${user.nome} (${user.email}) - Role: ${user.role || 'user'}</h3>
+            </div>
+            <div class="user-reservations">
+              ${userReservasHtml}
+            </div>
+          `;
+          usersContainer.appendChild(userDiv);
+        });
+      }
+    }
+
+    // Função para cancelar viagem (Admin)
+    function cancelarViagemAdmin(userEmail, tripId) {
+      if (!confirm(`Tem certeza que deseja cancelar a viagem ${tripId} do usuário ${userEmail}?`)) return;
+
+      let allUsers = JSON.parse(localStorage.getItem('usuarios')) || [];
+      const userIndex = allUsers.findIndex(u => u.email === userEmail);
+
+      if (userIndex !== -1) {
+        const user = allUsers[userIndex];
+        const reservaIndex = user.reservas.findIndex(r => r.id === tripId);
+
+        if (reservaIndex !== -1) {
+          user.reservas[reservaIndex].status = 'cancelada';
+          user.reservas[reservaIndex].dataCancelamento = new Date().toLocaleString();
+          localStorage.setItem('usuarios', JSON.stringify(allUsers));
+          alert(`Viagem ${tripId} do usuário ${userEmail} cancelada com sucesso!`);
+          renderUsers(); // Re-renderiza a lista para refletir as mudanças
+        } else {
+          alert('Viagem não encontrada.');
+        }
+      } else {
+        alert('Usuário não encontrado.');
+      }
+    }
+
+    // Função para ver detalhes da viagem (Admin)
+    function detalhesViagemAdmin(userEmail, tripId) {
+      let allUsers = JSON.parse(localStorage.getItem('usuarios')) || [];
+      const user = allUsers.find(u => u.email === userEmail);
+
+      if (user) {
+        const viagem = user.reservas.find(r => r.id === tripId);
+        if (viagem) {
+          alert(`Detalhes da Viagem:\n\n` +
+                `Usuário: ${user.nome} (${user.email})\n` +
+                `ID da Reserva: ${viagem.id}\n` +
+                `Origem: ${viagem.origem}\n` +
+                `Destino: ${viagem.destino}\n` +
+                `Data: ${viagem.data}\n` +
+                `Horário: ${viagem.horario}\n` +
+                `Assentos: ${viagem.assentos ? viagem.assentos.join(', ') : 'N/A'}\n` +
+                `Status: ${viagem.status ? viagem.status.toUpperCase() : 'CONFIRMADA'}\n` +
+                `Valor: R$ ${viagem.total ? viagem.total.toFixed(2) : '0.00'}`);
+        } else {
+          alert('Viagem não encontrada.');
+        }
+      } else {
+        alert('Usuário não encontrado.');
+      }
+    }
+
+    // Chama a função para renderizar os usuários quando a página é carregada
+    document.addEventListener('DOMContentLoaded', renderUsers);
+  </script>
+</body>
+</html>
