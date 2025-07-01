@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendar Viagem - ÔnibusCuiabá</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+    body {
+      background-image: url('Cuiaba.jpg');
+      background-size: cover;
+      background-attachment: fixed;
+    }
+    .navbar {
+      background-color: rgba(52, 152, 219, 0.8);
+      padding: 15px 30px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+    .form-field {
+      margin: 15px 0;
+    }
+    select, input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 12px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
+    button:disabled {
+      background-color: #95a5a6;
+      cursor: not-allowed;
+    }
+    .viagem-info {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .assentos-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .assento {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .disponivel { background: #2ecc71; color: white; }
+    .ocupado { background: #e74c3c; color: white; cursor: not-allowed; }
+    .selecionado { background: #3498db; color: white; transform: scale(1.1); }
+    .acoes {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+    .btn-voltar { background: #95a5a6; }
+    .btn-avancar { background: #3498db; }
+    .btn-confirmar { background: #2ecc71; }
+    .resumo-reserva {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    .pagamento-section {
+      margin-top: 20px;
+    }
+    .pagamento-option {
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .pagamento-option:hover {
+      background-color: #f0f8ff;
+    }
+    .pagamento-option input {
+      width: auto;
+      margin-right: 10px;
+    }
+    .pagamento-details {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f0f8ff;
+      border-radius: 8px;
+    }
+    .qr-code {
+      width: 200px;
+      height: 200px;
+      margin: 10px auto;
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ddd;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #666;
+    }
+    .section-title {
+      font-size: 18px;
+      color: #3498db;
+      margin: 20px 0 10px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h2>ÔnibusCuiabá</h2>
+  </div>
+
+  <div class="container">
+    <!-- Etapa 1: Seleção da Viagem -->
+    <div id="etapa-viagem">
+      <h1>Agendar Viagem</h1>
+      
+      <div class="form-field">
+        <label>Origem:</label>
+        <select id="origem" required>
+          <option value="">Selecione</option>
+          <option value="Cuiabá">Cuiabá</option>
+          <option value="RosarioOeste">RosarioOeste</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Destino:</label>
+        <select id="destino" required>
+          <option value="">Selecione</option>
+          <option value="Rondonópolis">Rondonópolis</option>
+          <option value="Sinop">Sinop</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Data:</label>
+        <input type="date" id="data" required>
+      </div>
+
+      <div class="form-field">
+        <label>Horário:</label>
+        <select id="horario" required>
+          <option value="">Selecione</option>
+          <option value="06:00">06:00</option>
+          <option value="08:00">08:00</option>
+          <option value="12:00">12:00</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Passageiros:</label>
+        <input type="number" id="passageiros" min="1" max="10" value="1" required>
+      </div>
+
+      <button id="btn-buscar" onclick="avancarParaAssentos()">Buscar Passagens</button>
+    </div>
+
+    <!-- Etapa 2: Seleção de Assentos -->
+    <div id="etapa-assentos" class="hidden">
+      <h1>Selecione seus assentos</h1>
+      
+      <div class="viagem-info">
+        <p><strong>Origem:</strong> <span id="info-origem"></span></p>
+        <p><strong>Destino:</strong> <span id="info-destino"></span></p>
+        <p><strong>Data:</strong> <span id="info-data"></span></p>
+        <p><strong>Horário:</strong> <span id="info-horario"></span></p>
+        <p><strong>Passageiros:</strong> <span id="info-passageiros"></span></p>
+        <p><strong>Preço unitário:</strong> R$ <span id="info-preco"></span></p>
+      </div>
+
+      <div class="assentos-container" id="assentos">
+        <!-- Assentos gerados por JavaScript -->
+      </div>
+
+      <div class="resumo-reserva" id="resumo-reserva" style="display: none;">
+        <h3>Resumo da Reserva</h3>
+        <div id="resumo-detalhes"></div>
+      </div>
+
+      <div class="acoes">
+        <button class="btn-voltar" onclick="voltarParaViagem()">Voltar</button>
+        <button class="btn-avancar" id="btn-avancar-assentos" disabled onclick="avancarParaPagamento()">Avançar para Pagamento</button>
+      </div>
+    </div>
+
+    <!-- Etapa 3: Pagamento -->
+    <div id="etapa-pagamento" class="hidden">
+      <h1>Finalizar Pagamento</h1>
+      
+      <div class="viagem-info">
+        <p><strong>Origem:</strong> <span id="pagamento-origem"></span></p>
+        <p><strong>Destino:</strong> <span id="pagamento-destino"></span></p>
+        <p><strong>Data:</strong> <span id="pagamento-data"></span></p>
+        <p><strong>Horário:</strong> <span id="pagamento-horario"></span></p>
+        <p><strong>Passageiros:</strong> <span id="pagamento-passageiros"></span></p>
+        <p><strong>Assentos:</strong> <span id="pagamento-assentos"></span></p>
+        <p><strong>Total:</strong> R$ <span id="pagamento-total"></span></p>
+      </div>
+
+      <div class="section-title">Método de Pagamento</div>
+      
+      <div class="pagamento-section">
+        <div class="pagamento-option">
+          <input type="radio" id="pix" name="pagamento" value="pix" checked>
+          <label for="pix">PIX (Pagamento instantâneo - 5% de desconto)</label>
+        </div>
+        
+        <div class="pagamento-option" id="cartao-option">
+          <input type="radio" id="cartao" name="pagamento" value="cartao">
+          <label for="cartao">Cartão de Crédito</label>
+        </div>
+        
+        <div id="pix-details" class="pagamento-details">
+          <p>Você receberá um QR Code para pagamento via PIX com validade de 30 minutos.</p>
+          <div class="qr-code">
+            <!-- QR Code seria gerado por uma API no mundo real -->
+            QR Code PIX<br>(Simulação)
+          </div>
+          <p>Valor com desconto: R$ <span id="pix-valor"></span></p>
+        </div>
+        
+        <div id="cartao-details" class="pagamento-details hidden">
+          <div id="cartao-salvo">
+            <p>Cartão salvo: **** **** **** <span id="ultimos-digitos"></span></p>
+            <p>Validade: <span id="validade-cartao"></span></p>
+            <p>Titular: <span id="nome-cartao"></span></p>
+          </div>
+          <div id="sem-cartao" class="hidden">
+            <p>Nenhum cartão cadastrado. Por favor, utilize PIX ou cadastre um cartão no seu perfil.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="acoes">
+        <button class="btn-voltar" onclick="voltarParaAssentos()">Voltar</button>
+        <button class="btn-confirmar" id="btn-confirmar-pagamento" onclick="finalizarReserva()">Confirmar Reserva</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Variáveis globais
+    let loggedUser = null;
+    let dadosViagem = {
+      origem: '',
+      destino: '',
+      data: '',
+      horario: '',
+      passageiros: 1,
+      preco: 0,
+      assentos: []
+    };
+    let assentosSelecionados = [];
+    let temCartaoSalvo = false;
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+      // Configura data mínima (hoje)
+      document.getElementById('data').min = new Date().toISOString().split('T')[0];
+      
+      // Verifica usuário logado
+      verificarUsuarioLogado();
+      
+      // Configura listeners para métodos de pagamento
+      document.getElementById('pix').addEventListener('change', atualizarMetodoPagamento);
+      document.getElementById('cartao').addEventListener('change', atualizarMetodoPagamento);
+    });
+
+    function verificarUsuarioLogado() {
+      try {
+        const userString = localStorage.getItem('loggedUser');
+        if (userString) {
+          loggedUser = JSON.parse(userString);
+          temCartaoSalvo = !!loggedUser.cardNumber;
+          
+          if (!temCartaoSalvo) {
+            document.getElementById('cartao').disabled = true;
+            document.getElementById('cartao-option').style.opacity = '0.5';
+            document.getElementById('sem-cartao').classList.remove('hidden');
+            document.getElementById('cartao-salvo').classList.add('hidden');
+          } else {
+            // Mostra informações do cartão salvo
+            document.getElementById('ultimos-digitos').textContent = loggedUser.cardNumber.slice(-4);
+            document.getElementById('validade-cartao').textContent = loggedUser.cardExpiry;
+            document.getElementById('nome-cartao').textContent = loggedUser.cardName;
+          }
+        } else {
+          alert("Você precisa estar logado para agendar uma viagem.");
+          window.location.href = 'login.html';
+        }
+      } catch (e) {
+        console.error("Erro ao verificar usuário logado:", e);
+      }
+    }
+
+    function calcularPreco(origem, destino) {
+      const tabelaPrecos = {
+        "Cuiabá-Rondonópolis": 120.00,
+        "Cuiabá-Sinop": 150.00,
+        "Rondonópolis-Sinop": 100.00
+      };
+      return tabelaPrecos[`${origem}-${destino}`] || 100.00;
+    }
+
+    function avancarParaAssentos() {
+      // Validação dos campos
+      const origem = document.getElementById('origem').value;
+      const destino = document.getElementById('destino').value;
+      const data = document.getElementById('data').value;
+      const horario = document.getElementById('horario').value;
+      const passageiros = document.getElementById('passageiros').value;
+
+      if (!origem || !destino || !data || !horario || !passageiros) {
+        alert("Preencha todos os campos!");
+        return;
+      }
+
+      // Atualiza dados da viagem
+      dadosViagem.origem = origem;
+      dadosViagem.destino = destino;
+      dadosViagem.data = data;
+      dadosViagem.horario = horario;
+      dadosViagem.passageiros = passageiros;
+      dadosViagem.preco = calcularPreco(origem, destino);
+
+      // Preenche informações na próxima etapa
+      document.getElementById('info-origem').textContent = origem;
+      document.getElementById('info-destino').textContent = destino;
+      document.getElementById('info-data').textContent = data;
+      document.getElementById('info-horario').textContent = horario;
+      document.getElementById('info-passageiros').textContent = passageiros;
+      document.getElementById('info-preco').textContent = dadosViagem.preco.toFixed(2);
+
+      // Gera os assentos
+      gerarAssentos();
+
+      // Mostra próxima etapa
+      document.getElementById('etapa-viagem').classList.add('hidden');
+      document.getElementById('etapa-assentos').classList.remove('hidden');
+    }
+
+    function gerarAssentos() {
+      const assentosContainer = document.getElementById('assentos');
+      assentosContainer.innerHTML = '';
+      
+      // Assentos ocupados simulados - em um sistema real viria de uma API
+      const assentosOcupados = [3, 5, 8, 12]; 
+      
+      for (let i = 1; i <= 24; i++) {
+        const assento = document.createElement('div');
+        assento.className = assentosOcupados.includes(i) ? 'assento ocupado' : 'assento disponivel';
+        assento.textContent = i;
+        assento.dataset.numero = i;
+        
+        if (!assentosOcupados.includes(i)) {
+          assento.addEventListener('click', () => toggleAssento(i));
+        }
+        
+        assentosContainer.appendChild(assento);
+      }
+    }
+
+    function toggleAssento(numero) {
+      const assento = document.querySelector(`.assento[data-numero="${numero}"]`);
+      const index = assentosSelecionados.indexOf(numero);
+      
+      if (index === -1) {
+        if (assentosSelecionados.length >= parseInt(dadosViagem.passageiros)) {
+          alert(`Você só pode selecionar ${dadosViagem.passageiros} assento(s).`);
+          return;
+        }
+        assentosSelecionados.push(numero);
+        assento.classList.add('selecionado');
+      } else {
+        assentosSelecionados.splice(index, 1);
+        assento.classList.remove('selecionado');
+      }
+      
+      atualizarResumoAssentos();
+      document.getElementById('btn-avancar-assentos').disabled = 
+        assentosSelecionados.length !== parseInt(dadosViagem.passageiros);
+    }
+
+    function atualizarResumoAssentos() {
+      const resumo = document.getElementById('resumo-detalhes');
+      const container = document.getElementById('resumo-reserva');
+      
+      if (assentosSelecionados.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+      
+      container.style.display = 'block';
+      const total = dadosViagem.preco * parseInt(dadosViagem.passageiros);
+      resumo.innerHTML = `
+        <p><strong>Assentos:</strong> ${assentosSelecionados.sort((a, b) => a - b).join(', ')}</p>
+        <p><strong>Total:</strong> R$ ${total.toFixed(2)}</p>
+      `;
+    }
+
+    function avancarParaPagamento() {
+      if (assentosSelecionados.length !== parseInt(dadosViagem.passageiros)) {
+        alert('Por favor, selecione exatamente ' + dadosViagem.passageiros + ' assento(s)!');
+        return;
+      }
+
+      // Atualiza dados da viagem com os assentos selecionados
+      dadosViagem.assentos = [...assentosSelecionados].sort((a, b) => a - b);
+
+      // Preenche informações na etapa de pagamento
+      document.getElementById('pagamento-origem').textContent = dadosViagem.origem;
+      document.getElementById('pagamento-destino').textContent = dadosViagem.destino;
+      document.getElementById('pagamento-data').textContent = dadosViagem.data;
+      document.getElementById('pagamento-horario').textContent = dadosViagem.horario;
+      document.getElementById('pagamento-passageiros').textContent = dadosViagem.passageiros;
+      document.getElementById('pagamento-assentos').textContent = dadosViagem.assentos.join(', ');
+      
+      const total = dadosViagem.preco * parseInt(dadosViagem.passageiros);
+      document.getElementById('pagamento-total').textContent = total.toFixed(2);
+      
+      // Calcula valor com desconto PIX (5%)
+      const pixValor = total * 0.95;
+      document.getElementById('pix-valor').textContent = pixValor.toFixed(2);
+
+      // Mostra próxima etapa
+      document.getElementById('etapa-assentos').classList.add('hidden');
+      document.getElementById('etapa-pagamento').classList.remove('hidden');
+    }
+
+    function atualizarMetodoPagamento() {
+      const metodo = document.querySelector('input[name="pagamento"]:checked').value;
+      
+      if (metodo === 'pix') {
+        document.getElementById('pix-details').classList.remove('hidden');
+        document.getElementById('cartao-details').classList.add('hidden');
+      } else {
+        document.getElementById('pix-details').classList.add('hidden');
+        document.getElementById('cartao-details').classList.remove('hidden');
+      }
+    }
+
+    function voltarParaViagem() {
+      document.getElementById('etapa-assentos').classList.add('hidden');
+      document.getElementById('etapa-viagem').classList.remove('hidden');
+    }
+
+    function voltarParaAssentos() {
+      document.getElementById('etapa-pagamento').classList.add('hidden');
+      document.getElementById('etapa-assentos').classList.remove('hidden');
+    }
+
+    function finalizarReserva() {
+      try {
+        const metodoPagamento = document.querySelector('input[name="pagamento"]:checked').value;
+        
+        if (metodoPagamento === 'cartao' && !temCartaoSalvo) {
+          alert('Por favor, selecione PIX como método de pagamento ou cadastre um cartão no seu perfil.');
+          return;
+        }
+
+        // Calcula o total (com desconto se for PIX)
+        let total = dadosViagem.preco * parseInt(dadosViagem.passageiros);
+        if (metodoPagamento === 'pix') {
+          total = total * 0.95; // Aplica desconto de 5%
+        }
+
+        // Cria objeto de reserva
+        const novaReserva = {
+          id: 'RES-' + Date.now().toString().slice(-6),
+          origem: dadosViagem.origem,
+          destino: dadosViagem.destino,
+          data: dadosViagem.data,
+          horario: dadosViagem.horario,
+          passageiros: dadosViagem.passageiros,
+          assentos: dadosViagem.assentos,
+          total: total,
+          metodoPagamento: metodoPagamento,
+          status: 'confirmada',
+          dataReserva: new Date().toISOString()
+        };
+
+        // Adiciona a reserva ao usuário
+        if (!loggedUser.reservas) {
+          loggedUser.reservas = [];
+        }
+        loggedUser.reservas.push(novaReserva);
+
+        // Atualiza o usuário no localStorage
+        localStorage.setItem('loggedUser', JSON.stringify(loggedUser));
+
+        // Atualiza também no array geral de usuários (se existir)
+        try {
+          const usuariosString = localStorage.getItem('usuarios');
+          if (usuariosString) {
+            let usuarios = JSON.parse(usuariosString);
+            const usuarioIndex = usuarios.findIndex(u => u.email === loggedUser.email);
+            if (usuarioIndex !== -1) {
+              usuarios[usuarioIndex] = loggedUser;
+              localStorage.setItem('usuarios', JSON.stringify(usuarios));
+            }
+          }
+        } catch (e) {
+          console.error('Erro ao atualizar lista de usuários:', e);
+        }
+
+        // Feedback e redirecionamento
+        alert(`Reserva #${novaReserva.id} confirmada!\n\nAssentos: ${novaReserva.assentos.join(', ')}\nValor total: R$ ${novaReserva.total.toFixed(2)}\nMétodo de pagamento: ${metodoPagamento.toUpperCase()}`);
+        window.location.href = "Historicodeviagem.html";
+      } catch (error) {
+        console.error('Erro ao finalizar reserva:', error);
+        alert('Erro ao finalizar reserva: ' + error.message);
+      }
+    }
+  </script>
+</body>
+</html>
